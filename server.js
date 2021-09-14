@@ -30,25 +30,7 @@ wa.create({
 }).then(client => start(client));
 
 function start(client) {
-  const showActivities = async function() {
-    console.log('showing activities')
-    const groups = await client.getAllGroups()
-    .catch(error => {console.log(error)})
-    
-    const dbGroups = (await db.collection(`groups`).get()).docs;
-    groups.forEach(async group => {
-      
-      const dbGroup = dbGroups.find(element => element.data().group == group.id)
-      console.log(dbGroups[0].data())
-      console.log(dbGroups[0])
-      if(!dbGroup) return;
-      else {
-        
-        const classroom = google.classroom({ version: "v1", auth });
-      }
-    })
-  };
-  showActivities()
+  showActivities(client)
   setInterval(showActivities, 30000);
   client.onMessage(async message => {
     if (
@@ -59,7 +41,7 @@ function start(client) {
       return;
     if (message.isGroupMsg && message.content.toLowerCase() == "configurar") {
       await client.sendText(message.from, "Iniciando configuração...");
-      config(message, message.chat, client);
+      getCredentials(message, message.chat, client);
     } else if (!message.isGroupMsg) {
       await client.sendText(
         message.from,
@@ -78,14 +60,29 @@ function start(client) {
       console.log(error);
     });
 }
-
-async function config(message, group, client) {
+async function showActivities(message, client) {
+    const groups = await client.getAllGroups()
+    .catch(error => {console.log(error)})
+    
+    const dbGroups = (await db.collection(`groups`).get()).docs;
+    groups.forEach(async group => {
+      
+      const dbGroup = await dbGroups.find(element => element.data().group == group.id)
+      console.log(dbGroup)
+      if(!dbGroup) return;
+      else {
+        
+      }
+    })
+  };
+async function getCredentials(message, group, client) {
   fs.readFile("credentials.json", (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
-    authorize(JSON.parse(content), chooseCourse);
+    authorize(JSON.parse(content), chooseCourse, message, client);
   });
-  async function authorize(credentials, callback) {
+}
+async function authorize(credentials, callback, message, client) {
     const { client_secret, client_id, redirect_uris } = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
       client_id,
@@ -104,7 +101,7 @@ async function config(message, group, client) {
       callback(oAuth2Client, message, client, token);
     }
   }
-  async function getNewToken(oAuth2Client, callback) {
+async function getNewToken(oAuth2Client, callback) {
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: SCOPES
@@ -136,8 +133,6 @@ async function config(message, group, client) {
         });
       });
   }
-}
-
 async function chooseCourse(auth, message, client, token) {
   await client.sendText(message.from, "Autenticado com sucesso.");
   const classroom = google.classroom({ version: "v1", auth });
