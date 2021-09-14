@@ -26,7 +26,7 @@ wa.create({
   autoRefresh: true,
   cacheEnabled: false,
   sessionId: "hr",
-  authTimeout: 700
+  authTimeout: 70000
 }).then(client => start(client));
 
 async function start(client) {
