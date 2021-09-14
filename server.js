@@ -25,7 +25,7 @@ const db = admin.firestore();
 wa.create({
   autoRefresh: true,
   cacheEnabled: false,
-  sessionId: "hr",
+  sessionId: "jp",
   authTimeout: 70000
 }).then(client => start(client));
 
