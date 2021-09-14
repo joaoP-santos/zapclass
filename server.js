@@ -29,9 +29,9 @@ wa.create({
   authTimeout: 700
 }).then(client => start(client));
 
-function start(client) {
-  getGroups(client)
-  setInterval(getGroups, 10000);
+async function start(client) {
+  await getGroups(client)
+  setInterval(getGroups, 90000);
   client.onMessage(async message => {
     if (
       !["557398417683@c.us", "557398653542@c.us", "557399622613@c.us"].includes(
@@ -60,7 +60,7 @@ function start(client) {
       console.log(error);
     });
 }
-async function getGroups(message, client) {
+async function getGroups(client) {
     const groups = await client.getAllGroups()
     .catch(error => {console.log(error)})
     
@@ -71,7 +71,7 @@ async function getGroups(message, client) {
       console.log(dbGroup)
       if(!dbGroup) return;
       else {
-        await getCourses(message, client, dbGroup.data())
+        await getCourses(client, dbGroup.data())
       }
     })
   };
@@ -102,8 +102,8 @@ async function authorize(credentials, callback, message, client) {
       //callback(oAuth2Client, message, client, token);
     }
   }
-async function getCourses(message, client, dbGroup){
-  const oAuth2Client = await getCredentials(message, client)
+async function getCourses(client, dbGroup){
+  const oAuth2Client = await getCredentials('message', client)
   const classroom = google.classroom({ version: "v1", oAuth2Client });
   const course = await classroom.courses.get(dbGroup.course)
   console.log(course)
