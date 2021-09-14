@@ -30,8 +30,8 @@ wa.create({
 }).then(client => start(client));
 
 function start(client) {
-  showActivities(client)
-  setInterval(showActivities, 30000);
+  getGroups(client)
+  setInterval(getGroups, 30000);
   client.onMessage(async message => {
     if (
       !["557398417683@c.us", "557398653542@c.us", "557399622613@c.us"].includes(
@@ -71,7 +71,7 @@ async function getGroups(message, client) {
       console.log(dbGroup)
       if(!dbGroup) return;
       else {
-        getCredentials(message, client)
+        await getCourses(message, client, dbGroup.data())
       }
     })
   };
@@ -96,12 +96,19 @@ async function authorize(credentials, callback, message, client) {
       return getNewToken(oAuth2Client, callback, message, client);
     } else {
       token = token.data().token;
-      console.log(token);
       oAuth2Client.setCredentials(JSON.parse(token));
-      callback(oAuth2Client, message, client, token);
+      return oAuth2Client
+
+      //callback(oAuth2Client, message, client, token);
     }
   }
-async function getCourses(oAuth2Client,){}
+async function getCourses(message, client, dbGroup){
+  const oAuth2Client = await getCredentials(message, client)
+  const classroom = google.classroom({ version: "v1", auth });
+  const course = await classroom.courses.get(dbGroup.course)
+  console.log(course)
+  
+}
 async function getNewToken(oAuth2Client, callback, message, client) {
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
