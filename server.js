@@ -41,7 +41,7 @@ function start(client) {
       return;
     if (message.isGroupMsg && message.content.toLowerCase() == "configurar") {
       await client.sendText(message.from, "Iniciando configuração...");
-      getCredentials(message, message.chat, client);
+      getCredentials(message, client);
     } else if (!message.isGroupMsg) {
       await client.sendText(
         message.from,
@@ -60,7 +60,7 @@ function start(client) {
       console.log(error);
     });
 }
-async function showActivities(message, client) {
+async function getGroups(message, client) {
     const groups = await client.getAllGroups()
     .catch(error => {console.log(error)})
     
@@ -71,11 +71,11 @@ async function showActivities(message, client) {
       console.log(dbGroup)
       if(!dbGroup) return;
       else {
-        
+        getCredentials(message, client)
       }
     })
   };
-async function getCredentials(message, group, client) {
+async function getCredentials(message, client) {
   fs.readFile("credentials.json", (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
@@ -93,7 +93,7 @@ async function authorize(credentials, callback, message, client) {
     // Check if we have previously stored a token.
     let token = db.doc(`groups/${message.from}`).get();
     if (!token.exists) {
-      return getNewToken(oAuth2Client, callback);
+      return getNewToken(oAuth2Client, callback, message, client);
     } else {
       token = token.data().token;
       console.log(token);
@@ -101,7 +101,8 @@ async function authorize(credentials, callback, message, client) {
       callback(oAuth2Client, message, client, token);
     }
   }
-async function getNewToken(oAuth2Client, callback) {
+async function getCourses(oAuth2Client,){}
+async function getNewToken(oAuth2Client, callback, message, client) {
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: SCOPES
