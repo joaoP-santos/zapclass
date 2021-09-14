@@ -43,8 +43,8 @@ function start(client) {
       console.log(dbGroups[0])
       if(!dbGroup) return;
       else {
-        console.log(dbGroup)
-        client.sendText(dbGroup.group, dbGroup.course)
+        
+        const classroom = google.classroom({ version: "v1", auth });
       }
     })
   };
