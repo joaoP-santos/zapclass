@@ -36,13 +36,11 @@ function start(client) {
     .catch(error => {console.log(error)})
     
     const dbGroups = (await db.collection(`groups`).get()).docs;
-
     groups.forEach(async group => {
       
-      const dbGroup = dbGroups.find(element => element.data().id == group.id)
-      console.log(dbGroup)
-      console.log(dbGroups.data())
-      console.log(dbGroup.data())
+      const dbGroup = dbGroups.find(element => element.data().group == group.id)
+      console.log(dbGroups[0].data())
+      console.log(dbGroups[0])
       if(!dbGroup) return;
       else {
         console.log(dbGroup)
@@ -50,8 +48,8 @@ function start(client) {
       }
     })
   };
-
-  setInterval(showActivities, 5000);
+  showActivities()
+  setInterval(showActivities, 30000);
   client.onMessage(async message => {
     if (
       !["557398417683@c.us", "557398653542@c.us", "557399622613@c.us"].includes(
