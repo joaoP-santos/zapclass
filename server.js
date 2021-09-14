@@ -31,7 +31,7 @@ wa.create({
 
 function start(client) {
   getGroups(client)
-  setInterval(getGroups, 30000);
+  setInterval(getGroups, 10000);
   client.onMessage(async message => {
     if (
       !["557398417683@c.us", "557398653542@c.us", "557399622613@c.us"].includes(
@@ -104,10 +104,9 @@ async function authorize(credentials, callback, message, client) {
   }
 async function getCourses(message, client, dbGroup){
   const oAuth2Client = await getCredentials(message, client)
-  const classroom = google.classroom({ version: "v1", auth });
+  const classroom = google.classroom({ version: "v1", oAuth2Client });
   const course = await classroom.courses.get(dbGroup.course)
   console.log(course)
-  
 }
 async function getNewToken(oAuth2Client, callback, message, client) {
     const authUrl = oAuth2Client.generateAuthUrl({
