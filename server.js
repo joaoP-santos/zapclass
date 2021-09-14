@@ -40,7 +40,7 @@ function start(client) {
     
     groups.forEach(async group => {
       
-      const dbGroup = data.find(element => element.id == group.id)
+      const dbGroup = data.find(element => element.id == group.id).data()
       
       if(!dbGroup) return;
       else {
