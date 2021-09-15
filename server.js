@@ -72,7 +72,8 @@ async function getGroups(client) {
     );
     if (dbGroup == undefined) return;
     else {
-      await getCourses(client, dbGroup.data());
+      const dbGroupData = dbGroup.data()
+      await getCourses(client, dbGroupData);
     }
   });
 }
@@ -111,6 +112,7 @@ async function authorize(credentials, callback, message, client, group) {
   }
 }
 async function getCourses(client, dbGroup) {
+  console.log(dbGroup)
   if (dbGroup == undefined) return;
   fs.readFile("credentials.json", async (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
