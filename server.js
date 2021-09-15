@@ -112,12 +112,11 @@ async function authorize(credentials, callback, message, client, group) {
   }
 }
 async function getCourses(client, dbGroup) {
-  console.log(dbGroup)
-  if (dbGroup == undefined) return;
   fs.readFile("credentials.json", async (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
     const credentials = JSON.parse(content);
+    
     const { client_secret, client_id, redirect_uris } = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
       client_id,
@@ -127,7 +126,6 @@ async function getCourses(client, dbGroup) {
     // Check if we have previously stored a token.
     let token = await dbGroup.token;
     oAuth2Client.setCredentials(token);
-    return await oAuth2Client;
     const classroom = await google.classroom({ version: "v1", oAuth2Client });
     const course = await classroom.courses.get({ id: dbGroup.course });
     console.log(course)
