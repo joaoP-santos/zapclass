@@ -79,6 +79,7 @@ async function getCredentials(message, client, group) {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
     const authorizeCredentials = await authorize(JSON.parse(content), chooseCourse, message, client, group);
+    console.log(authorizeCredentials)
     return authorizeCredentials
   });
 }
