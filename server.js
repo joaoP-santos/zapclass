@@ -58,7 +58,7 @@ async function start(client) {
       console.log(error);
     });
   await getGroups(client)
-  setInterval(getGroups, 90000);
+  setInterval(() => getGroups(client), 90000);
 }
 async function getGroups(client) {
     const groups = await client.getAllGroups()
@@ -79,7 +79,7 @@ async function getCredentials(message, client, group) {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
     const authorizeCredentials = await authorize(JSON.parse(content), chooseCourse, message, client, group);
-    return await authorizeCredentials
+    return authorizeCredentials
   });
 }
 async function authorize(credentials, callback, message, client, group) {
