@@ -12,6 +12,6 @@
     "include": [
     ]
   },
-    "throttle": 9000000  
+    "throttle": 900000
 }
   
