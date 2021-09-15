@@ -30,8 +30,7 @@ wa.create({
 }).then(client => start(client));
 
 async function start(client) {
-  await getGroups(client)
-  setInterval(getGroups, 90000);
+
   client.onMessage(async message => {
     if (
       !["557398417683@c.us", "557398653542@c.us", "557399622613@c.us"].includes(
@@ -49,8 +48,7 @@ async function start(client) {
       );
     }
   });
-  client
-    .onAddedToGroup(async chat => {
+  client.onAddedToGroup(async chat => {
       await client.sendText(
         chat.id,
         'Obrigado por me adicionar no grupo! Envie "configurar" para iniciar a configuração.'
@@ -59,6 +57,8 @@ async function start(client) {
     .catch(error => {
       console.log(error);
     });
+  await getGroups(client)
+  setInterval(getGroups, 90000);
 }
 async function getGroups(client) {
     const groups = await client.getAllGroups()
@@ -79,8 +79,8 @@ async function getCredentials(message, client, group) {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
     const authorizeCredentials = authorize(JSON.parse(content), chooseCourse, message, client);
-    return authorizeCredentials
     console.log(authorizeCredentials)
+    return authorizeCredentials
   });
 }
 async function authorize(credentials, callback, message, client) {
@@ -90,7 +90,6 @@ async function authorize(credentials, callback, message, client) {
       client_secret,
       redirect_uris[0]
     );
-
     // Check if we have previously stored a token.
     let token = db.doc(`groups/${message.from}`).get();
     if (!token.exists) {
@@ -98,14 +97,15 @@ async function authorize(credentials, callback, message, client) {
     } else {
       token = token.data().token;
       oAuth2Client.setCredentials(JSON.parse(token));
-      return oAuth2Client
       console.log(oAuth2Client)
+      return oAuth2Client
+
 
       //callback(oAuth2Client, message, client, token);
     }
   }
 async function getCourses(client, dbGroup){
-  const oAuth2Client = await getCredentials('message', client, )
+  const oAuth2Client = await getCredentials('message', client)
   console.log(oAuth2Client)
   const classroom = google.classroom({ version: "v1", oAuth2Client });
   const course = await classroom.courses.get({id: dbGroup.course})
