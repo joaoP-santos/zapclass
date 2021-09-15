@@ -30,7 +30,6 @@ wa.create({
 }).then(client => start(client));
 
 async function start(client) {
-
   client.onMessage(async message => {
     if (
       !["557398417683@c.us", "557398653542@c.us", "557399622613@c.us"].includes(
@@ -48,7 +47,8 @@ async function start(client) {
       );
     }
   });
-  client.onAddedToGroup(async chat => {
+  client
+    .onAddedToGroup(async chat => {
       await client.sendText(
         chat.id,
         'Obrigado por me adicionar no grupo! Envie "configurar" para iniciar a configuração.'
@@ -57,33 +57,65 @@ async function start(client) {
     .catch(error => {
       console.log(error);
     });
-  await getGroups(client)
+  await getGroups(client);
   setInterval(() => getGroups(client), 90000);
 }
 async function getGroups(client) {
-    const groups = await client.getAllGroups()
-    .catch(error => {console.log(error)})
-    
-    const dbGroups = (await db.collection(`groups`).get()).docs;
-    groups.forEach(async group => {
-      
-      const dbGroup = await dbGroups.find(element => element.data().group == group.id)
-      if(dbGroup == undefined) return;
-      else {
-        await getCourses(client, dbGroup.data())
-      }
-    })
-  };
+  const groups = await client.getAllGroups().catch(error => {
+    console.log(error);
+  });
+
+  const dbGroups = (await db.collection(`groups`).get()).docs;
+  groups.forEach(async group => {
+    const dbGroup = await dbGroups.find(
+      element => element.data().group == group.id
+    );
+    if (dbGroup == undefined) return;
+    else {
+      await getCourses(client, dbGroup.data());
+    }
+  });
+}
 async function getCredentials(message, client, group) {
   fs.readFile("credentials.json", async (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
-    const authorizeCredentials = await authorize(JSON.parse(content), chooseCourse, message, client, group);
-    console.log(authorizeCredentials)
-    return authorizeCredentials
+    const authorizeCredentials = await authorize(
+      JSON.parse(content),
+      chooseCourse,
+      message,
+      client,
+      group
+    );
+    console.log(authorizeCredentials);
+    return authorizeCredentials;
   });
 }
 async function authorize(credentials, callback, message, client, group) {
+  const { client_secret, client_id, redirect_uris } = credentials.installed;
+  const oAuth2Client = new google.auth.OAuth2(
+    client_id,
+    client_secret,
+    redirect_uris[0]
+  );
+  // Check if we have previously stored a token.
+  let token = await db.doc(`groups/${group}`).get();
+  if (!token.exists) {
+    return await getNewToken(oAuth2Client, callback, message, client);
+  } else {
+    token = await token.data().token;
+    oAuth2Client.setCredentials(token);
+    return await oAuth2Client;
+
+    //callback(oAuth2Client, message, client, token);
+  }
+}
+async function getCourses(client, dbGroup) {
+  if (dbGroup == undefined) return;
+  fs.readFile("credentials.json", async (err, content) => {
+    if (err) return console.log("Error loading client secret file:", err);
+    // Authorize a client with credentials, then call the Google Classroom API.
+    const credentials = JSON.parse(content);
     const { client_secret, client_id, redirect_uris } = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
       client_id,
@@ -91,58 +123,43 @@ async function authorize(credentials, callback, message, client, group) {
       redirect_uris[0]
     );
     // Check if we have previously stored a token.
-    let token = await db.doc(`groups/${group}`).get();
-    if (!token.exists) {
-      return await getNewToken(oAuth2Client, callback, message, client);
-    } else {
-      token = await token.data().token;
-      oAuth2Client.setCredentials(token);
-      return await oAuth2Client
-
-
-      //callback(oAuth2Client, message, client, token);
-    }
-  }
-async function getCourses(client, dbGroup){
-  if (dbGroup == undefined) return
-  const oAuth2Client = await getCredentials('message', client, dbGroup.group)
-  console.log(oAuth2Client)
-  const classroom = await google.classroom({ version: "v1", oAuth2Client });
-  const course = await classroom.courses.get({id: dbGroup.course})
-  
+    let token = await dbGroup.token;
+    oAuth2Client.setCredentials(token);
+    return await oAuth2Client;
+    const classroom = await google.classroom({ version: "v1", oAuth2Client });
+    const course = await classroom.courses.get({ id: dbGroup.course });
+    console.log(course)
+  });
 }
 async function getNewToken(oAuth2Client, callback, message, client) {
-    const authUrl = oAuth2Client.generateAuthUrl({
-      access_type: "offline",
-      scope: SCOPES
-    });
+  const authUrl = oAuth2Client.generateAuthUrl({
+    access_type: "offline",
+    scope: SCOPES
+  });
 
-    await client.sendText(
-      message.from,
-      `Autorize o bot a acessar sua turma por esse link: ${authUrl}`
-    );
-    await client.sendText(
-      message.from,
-      "Depois de autenticar, envie o código."
-    );
-    const filter = m => m.body.length > 1;
-    let codeSent = "";
+  await client.sendText(
+    message.from,
+    `Autorize o bot a acessar sua turma por esse link: ${authUrl}`
+  );
+  await client.sendText(message.from, "Depois de autenticar, envie o código.");
+  const filter = m => m.body.length > 1;
+  let codeSent = "";
 
-    const collector = client
-      .createMessageCollector(message, () => true, { max: 1 })
+  const collector = client
+    .createMessageCollector(message, () => true, { max: 1 })
 
-      .on("collect", async message => {
-        const code = message.body;
+    .on("collect", async message => {
+      const code = message.body;
 
-        console.log(code);
+      console.log(code);
 
-        oAuth2Client.getToken(code, (err, token) => {
-          if (err) return console.error("Error retrieving access token", err);
-          oAuth2Client.setCredentials(token);
-          callback(oAuth2Client, message, client, token);
-        });
+      oAuth2Client.getToken(code, (err, token) => {
+        if (err) return console.error("Error retrieving access token", err);
+        oAuth2Client.setCredentials(token);
+        callback(oAuth2Client, message, client, token);
       });
-  }
+    });
+}
 async function chooseCourse(auth, message, client, token) {
   await client.sendText(message.from, "Autenticado com sucesso.");
   const classroom = google.classroom({ version: "v1", auth });
