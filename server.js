@@ -105,8 +105,8 @@ async function authorize(credentials, callback, message, client) {
 async function getCourses(client, dbGroup){
   const oAuth2Client = await getCredentials('message', client)
   const classroom = google.classroom({ version: "v1", oAuth2Client });
-  const course = await classroom.courses.get(dbGroup.course)
-  console.log(course)
+  // const course = await classroom.courses.get(dbGroup.course)
+  console.log(dbGroup.course)
 }
 async function getNewToken(oAuth2Client, callback, message, client) {
     const authUrl = oAuth2Client.generateAuthUrl({

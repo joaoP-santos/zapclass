@@ -1,6 +1,6 @@
 dependencies:
   '@google-cloud/pubsub': 2.17.0
-  '@open-wa/wa-automate': 4.20.8
+  '@open-wa/wa-automate': 4.21.0
   firebase-admin: 9.11.1
   googleapis: 84.0.0
   push-receiver: 2.1.1
@@ -274,14 +274,14 @@ packages:
       node: '>=8.0'
     resolution:
       integrity: sha512-T8TbSnGsxo6TDBJx/Sgv/BlVJL3tshxZP7Aq5R1mSnM5OcHY2dQaxLMu2+E8u3gN0MLOzdjurqN4ZRVuzQycOQ==
-  /@open-wa/wa-automate-types-only/4.20.8:
+  /@open-wa/wa-automate-types-only/4.21.0:
     dev: false
     engines:
       node: '>=12.18.3'
       npm: '>=7.9.0'
     resolution:
-      integrity: sha512-A9hv5I9M+L124STCui1z9z1wIXCujWzt5KOOSgqCQJygYZqve1DNCRZ9cfqRsqs6uUH9VhJoiZHE0J2BqXKVTg==
-  /@open-wa/wa-automate/4.20.8:
+      integrity: sha512-IFT4dbOL9RZ33YEkEXTUhcH3pdZe0tmyFVzoqeEw0sxnwPrHVaFvnAAszXAbza8mutbEvMR3g2hYf0NKorW/6A==
+  /@open-wa/wa-automate/4.21.0:
     dependencies:
       '@discordjs/collection': 0.2.1
       '@open-wa/wa-decrypt': 4.3.1
@@ -294,6 +294,7 @@ packages:
       chrome-launcher: 0.14.0
       command-exists: 1.2.9
       command-line-usage: 6.1.1
+      cors: 2.8.5
       cross-env: 7.0.3
       cross-spawn: 7.0.3
       datauri: 4.1.0
@@ -353,10 +354,10 @@ packages:
     hasBin: true
     requiresBuild: true
     resolution:
-      integrity: sha512-PYOF4ESvckPHOJoP9IvsET7hD+2bD5upJszvOUPQZ9DFXM3skQDIaD/+QgDWAXxK8DV2D5COSKYO++T2h6z/eA==
+      integrity: sha512-WtaPhJGkVI7EKbabIvsZ7hZO4J/d7Pw0dRvRHisBZRM3koTunS4/OVifiP8/3C1znQ3oeLWLPdt1+FeScAS6iw==
   /@open-wa/wa-decrypt/4.3.1:
     dependencies:
-      '@open-wa/wa-automate-types-only': 4.20.8
+      '@open-wa/wa-automate-types-only': 4.21.0
       atob: 2.1.2
       axios: 0.21.4
       futoin-hkdf: 1.4.2
@@ -5748,7 +5749,7 @@ shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   '@google-cloud/pubsub': ^2.17.0
-  '@open-wa/wa-automate': ^4.20.8
+  '@open-wa/wa-automate': ^4.21.0
   firebase-admin: ^9.11.1
   googleapis: ^84.0.0
   push-receiver: ^2.1.1
