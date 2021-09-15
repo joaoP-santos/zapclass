@@ -75,11 +75,11 @@ async function getGroups(client) {
     })
   };
 async function getCredentials(message, client, group) {
-  fs.readFile("credentials.json", (err, content) => {
+  fs.readFile("credentials.json", async (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
-    const authorizeCredentials = authorize(JSON.parse(content), chooseCourse, message, client);
-    console.log(authorizeCredentials)
+    const authorizeCredentials = await authorize(JSON.parse(content), chooseCourse, message, client);
+    console.log('getcredentials', authorizeCredentials)
     return authorizeCredentials
   });
 }
@@ -97,7 +97,7 @@ async function authorize(credentials, callback, message, client) {
     } else {
       token = token.data().token;
       oAuth2Client.setCredentials(JSON.parse(token));
-      console.log(oAuth2Client)
+      console.log('authorize', oAuth2Client)
       return oAuth2Client
 
 
