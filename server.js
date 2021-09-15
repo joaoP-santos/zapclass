@@ -126,9 +126,11 @@ async function getCourses(client, dbGroup) {
     // Check if we have previously stored a token.
     let token = await dbGroup.token;
     oAuth2Client.setCredentials(token);
+    console.log(oAuth2Client)
     const classroom = await google.classroom({ version: "v1", oAuth2Client });
     const course = await classroom.courses.get({ id: dbGroup.course });
-    console.log(course)
+    console.log(typeof(course))
+    console.log(oAuth2Client)
   });
 }
 async function getNewToken(oAuth2Client, callback, message, client) {
