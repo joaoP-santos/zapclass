@@ -127,10 +127,10 @@ async function getCourses(client, dbGroup) {
     let token = await dbGroup.token;
     oAuth2Client.setCredentials(token);
     console.log(oAuth2Client)
-    const classroom = await google.classroom({ version: "v1", oAuth2Client });
-    const course = await classroom.courses.get({ id: dbGroup.course });
+    const classroom = await google.classroom({ version: "v1", auth: oAuth2Client });
+    console.log(classroom)
+    const course = await classroom.courses.get(dbGroup.course);
     console.log(typeof(course))
-    console.log(oAuth2Client)
   });
 }
 async function getNewToken(oAuth2Client, callback, message, client) {
