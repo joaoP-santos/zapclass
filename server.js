@@ -78,12 +78,12 @@ async function getCredentials(message, client, group) {
   fs.readFile("credentials.json", async (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
-    const authorizeCredentials = await authorize(JSON.parse(content), chooseCourse, message, client);
+    const authorizeCredentials = await authorize(JSON.parse(content), chooseCourse, message, client, group);
     console.log('getcredentials', authorizeCredentials)
-    return authorizeCredentials
+    return await authorizeCredentials
   });
 }
-async function authorize(credentials, callback, message, client) {
+async function authorize(credentials, callback, message, client, group) {
     const { client_secret, client_id, redirect_uris } = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
       client_id,
@@ -91,21 +91,23 @@ async function authorize(credentials, callback, message, client) {
       redirect_uris[0]
     );
     // Check if we have previously stored a token.
-    let token = db.doc(`groups/${message.from}`).get();
+    let token = await db.doc(`groups/${group}`).get();
+    console.log('token', token)
     if (!token.exists) {
-      return getNewToken(oAuth2Client, callback, message, client);
+      console.log('token n existe')
+      return await getNewToken(oAuth2Client, callback, message, client);
     } else {
       token = token.data().token;
       oAuth2Client.setCredentials(JSON.parse(token));
       console.log('authorize', oAuth2Client)
-      return oAuth2Client
+      return await oAuth2Client
 
 
       //callback(oAuth2Client, message, client, token);
     }
   }
 async function getCourses(client, dbGroup){
-  const oAuth2Client = await getCredentials('message', client)
+  const oAuth2Client = await getCredentials('message', client, dbGroup.group)
   console.log(oAuth2Client)
   const classroom = google.classroom({ version: "v1", oAuth2Client });
   const course = await classroom.courses.get({id: dbGroup.course})
