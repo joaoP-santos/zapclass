@@ -68,8 +68,7 @@ async function getGroups(client) {
     groups.forEach(async group => {
       
       const dbGroup = await dbGroups.find(element => element.data().group == group.id)
-      console.log(dbGroup)
-      if(!dbGroup) return;
+      if(dbGroup == undefined) return;
       else {
         await getCourses(client, dbGroup.data())
       }
@@ -105,8 +104,10 @@ async function authorize(credentials, callback, message, client) {
 async function getCourses(client, dbGroup){
   const oAuth2Client = await getCredentials('message', client)
   const classroom = google.classroom({ version: "v1", oAuth2Client });
-  // const course = await classroom.courses.get(dbGroup.course)
-  console.log(dbGroup.course)
+  const course = await classroom.courses.get({id: dbGroup.course})
+  console.log(course)
+  
+  
 }
 async function getNewToken(oAuth2Client, callback, message, client) {
     const authUrl = oAuth2Client.generateAuthUrl({
