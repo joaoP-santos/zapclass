@@ -7,7 +7,6 @@ const SCOPES = [
   "https://www.googleapis.com/auth/classroom.announcements.readonly",
   "https://www.googleapis.com/auth/classroom.coursework.me.readonly",
   "https://www.googleapis.com/auth/classroom.courses.readonly",
-  "https://www.googleapis.com/auth/classroom.push-notifications",
   "https://www.googleapis.com/auth/classroom.courses",
   "https://www.googleapis.com/auth/classroom.profile.emails"
 ];
@@ -103,6 +102,7 @@ async function authorize(credentials, callback, message, client, group) {
   // Check if we have previously stored a token.
   let token = await db.doc(`groups/${group}`).get();
   if (!token.exists) {
+    console.log(oAuth2Client)
     return await getNewToken(oAuth2Client, callback, message, client);
   } else {
     token = await token.data().token;
