@@ -63,12 +63,14 @@ async function getGroups(client) {
     console.log(error);
   });
 
-  const dbGroups = (await db.collection(`groups`).get()).docs;
+  let dbGroups = (await db.collection(`groups`).get())
+  dbGroups = dbGroups.docs()
+  console.log(dbGroups)
   groups.forEach(async group => {
     const dbGroup = await dbGroups.find(
       element => element.data().group == group.id
     );
-    if (dbGroup == undefined) return;
+    if (dbGroup == undefined) console.log(dbGroup);
     else {
       const dbGroupData = dbGroup.data();
       await getCourses(client, dbGroupData);
