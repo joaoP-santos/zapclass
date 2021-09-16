@@ -132,15 +132,17 @@ async function getCourses(client, dbGroup) {
     const courseId = await course.data.id
     let courseworks = await courses.courseWork.list({courseId: courseId})
     courseworks = await courseworks.data.courseWork
-    console.log(courseworks)
     courseworks.forEach(async coursework => {
-      if(dbGroup.courseworks.find(coursework.id) == true) {return}
-      else{
-        const group = await db.doc(`groups/${dbGroup.group}`).update({
-          courseworks: db.FieldValue.arrayUnion(coursework.id)
-        })
-        client.sendText(dbGroup.group, 'Nova atividade!')
-      }
+      const courseworkId = coursework.id
+      console.log(courseworks.find(courseworkId))
+      
+      // if(dbGroup.courseworks.find(coursework.id) ) {return}
+      // else{
+      //   const group = await db.doc(`groups/${dbGroup.group}`).update({
+      //     courseworks: db.FieldValue.arrayUnion(coursework.id)
+      //   })
+      //   client.sendText(dbGroup.group, 'Nova atividade!')
+      // }
     })
     // console.log(courseworks.data.courseWork)
   });
