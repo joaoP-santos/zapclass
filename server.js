@@ -137,11 +137,21 @@ async function getCourses(client, dbGroup) {
       const courseworkDb = await dbGroup.courseworks.find(coursework => coursework == courseworkId)
 
       if(courseworkDb != undefined) {return}
-      else{
-        const group = await db.doc(`groups/${dbGroup.group}`).update({
-          courseworks: db.FieldValue.arrayUnion(coursework.id)
+      else if (dbGroup.configured) {
+        await db.doc(`groups/${dbGroup.group}`).set({configured: true})
+        await db.doc(`groups/${dbGroup.group}`).update({
+          courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         })
-        client.sendText(dbGroup.group, 'Nova atividade!')
+      }
+      else{
+          await db.doc(`groups/${dbGroup.group}`).update({
+          courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
+        })
+        client.sendText(dbGroup.group, `Nova atividade!
+Título: ${coursework.title}
+Descrição: ${coursework.description}
+Prazo: 
+Link: ${coursework.alternateLink}`)
       }
     })
     // console.log(courseworks.data.courseWork)
