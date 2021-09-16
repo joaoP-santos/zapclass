@@ -145,8 +145,7 @@ async function getCourses(client, dbGroup) {
         await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
-        console.log("aaa");
-      } else if (dbGroup.configured == true) {
+      } else if (dbGroup.configured == true && !(await dbGroup.courseworks.find(courseworkDb => coursework.id == courseworkDb))) {
         db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
@@ -155,7 +154,7 @@ async function getCourses(client, dbGroup) {
 `Nova atividade!
 Título: ${coursework.title}
 Descrição: ${coursework.description}
-Prazo: ${coursework.dueDate.day}/${coursework.dueDate.month}${coursework.dueTime ? ` às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.` : '' } 
+Prazo: ${coursework.dueDate.day}/${coursework.dueDate.month}${coursework.dueTime ? ` às ${coursework.dueTime.hours - 3}h${coursework.dueTime.minutes}min.` : '' } 
 Link: ${coursework.alternateLink}`
         );
       }
