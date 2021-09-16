@@ -56,7 +56,7 @@ async function start(client) {
       console.log(error);
     });
   await getGroups(client);
-  setInterval(() => getGroups(client), 90000);
+  setInterval(() => getGroups(client), 10000);
 }
 async function getGroups(client) {
   const groups = await client.getAllGroups().catch(error => {
@@ -151,7 +151,7 @@ async function getCourses(client, dbGroup) {
         db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
-        client.sendText(
+        await client.sendText(
           dbGroup.group,
           `Nova atividade!
 Título: ${coursework.title}
@@ -159,6 +159,7 @@ Descrição: ${coursework.description}
 Prazo: ${coursework.dueDate.day}/${coursework.dueDate.month}, às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.
 Link: ${coursework.alternateLink}`
         );
+        console.log('Mensagem enviada')
       }
     });
     // console.log(courseworks.data.courseWork)
