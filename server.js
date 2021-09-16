@@ -144,13 +144,15 @@ async function getCourses(client, dbGroup) {
         })
       }
       else{
+        const teacher = await courses.teachers.get({courseId: courseworkId, userId: coursework.creatorUserId})
           await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         })
         client.sendText(dbGroup.group, `Nova atividade!
 Título: ${coursework.title}
+Professor: ${teacher.profile.name.fullName}
 Descrição: ${coursework.description}
-Prazo: 
+Prazo: ${coursework.dueDate.day}/{${coursework.dueDate.month}, às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.
 Link: ${coursework.alternateLink}`)
       }
     })
