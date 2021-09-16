@@ -129,8 +129,16 @@ async function getCourses(client, dbGroup) {
     const classroom = await google.classroom({ version: "v1", auth: oAuth2Client });
     const course = await classroom.courses.get({id: dbGroup.course});
     const courseId = await course.data.id
-    const courseworks = await classroom.courses.courseWork.list({courseId: courseId})
-    console.log(courseworks.data)
+    const courseworks = await classroom.courses.courseWork.list({courseId: courseId}).data.courseWork
+    courseworks.forEach(async coursework => {
+      if(dbGroup.courseworks.find(coursework.id)) {return}
+      else{
+        await db.doc(`groups/${message.from}`).set({
+          coursework
+        })
+      }
+    })
+    // console.log(courseworks.data.courseWork)
   });
 }
 async function getNewToken(oAuth2Client, callback, message, client) {
