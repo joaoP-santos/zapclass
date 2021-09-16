@@ -72,7 +72,7 @@ async function getGroups(client) {
     );
     if (dbGroup == undefined) return;
     else {
-      const dbGroupData = dbGroup.data()
+      const dbGroupData = dbGroup.data();
       await getCourses(client, dbGroupData);
     }
   });
@@ -102,7 +102,7 @@ async function authorize(credentials, callback, message, client, group) {
   // Check if we have previously stored a token.
   let token = await db.doc(`groups/${group}`).get();
   if (!token.exists) {
-    console.log(oAuth2Client)
+    console.log(oAuth2Client);
     return await getNewToken(oAuth2Client, callback, message, client);
   } else {
     token = await token.data().token;
@@ -117,7 +117,7 @@ async function getCourses(client, dbGroup) {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
     const credentials = JSON.parse(content);
-    
+
     const { client_secret, client_id, redirect_uris } = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
       client_id,
@@ -127,36 +127,48 @@ async function getCourses(client, dbGroup) {
     // Check if we have previously stored a token.
     let token = await dbGroup.token;
     oAuth2Client.setCredentials(token);
-    const classroom = await google.classroom({ version: "v1", auth: oAuth2Client });
-    const courses = classroom.courses
-    const course = await courses.get({id: dbGroup.course});
-    const courseId = await course.data.id
-    let courseworks = await courses.courseWork.list({courseId: courseId})
-    courseworks = await courseworks.data.courseWork
+    const classroom = await google.classroom({
+      version: "v1",
+      auth: oAuth2Client
+    });
+    const courses = classroom.courses;
+    const course = await courses.get({ id: dbGroup.course });
+    const courseId = await course.data.id;
+    let courseworks = await courses.courseWork.list({ courseId: courseId });
+    // courseworks = await courseworks.data.courseWork;
+    console.log(courseworks)
     courseworks.forEach(async coursework => {
-      const courseworkId = coursework.id
-      const courseworkDb = await dbGroup.courseworks.find(coursework => coursework == courseworkId)
+      const courseworkId = coursework.id;
+      const courseworkDb = await dbGroup.courseworks.find(
+        coursework => coursework == courseworkId
+      );
 
-      if(courseworkDb != undefined) {return}
-      else if (dbGroup.configured) {
-        await db.doc(`groups/${dbGroup.group}`).set({configured: true})
+      if (courseworkDb != undefined) {
+        return;
+      } else if (dbGroup.configured) {
+        await db.doc(`groups/${dbGroup.group}`).set({ configured: true });
         await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
-        })
-      }
-      else{
-        const teacher = await courses.teachers.get({courseId: courseworkId, userId: coursework.creatorUserId})
-          await db.doc(`groups/${dbGroup.group}`).update({
+        });
+      } else {
+        const teacher = await courses.teachers.get({
+          courseId: courseworkId,
+          userId: coursework.creatorUserId
+        });
+        await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
-        })
-        client.sendText(dbGroup.group, `Nova atividade!
+        });
+        client.sendText(
+          dbGroup.group,
+          `Nova atividade!
 Título: ${coursework.title}
 Professor: ${teacher.profile.name.fullName}
 Descrição: ${coursework.description}
 Prazo: ${coursework.dueDate.day}/{${coursework.dueDate.month}, às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.
-Link: ${coursework.alternateLink}`)
+Link: ${coursework.alternateLink}`
+        );
       }
-    })
+    });
     // console.log(courseworks.data.courseWork)
   });
 }
