@@ -128,6 +128,7 @@ async function getCourses(client, dbGroup) {
     oAuth2Client.setCredentials(token);
     const classroom = await google.classroom({ version: "v1", auth: oAuth2Client });
     const courseId = await classroom.courses.get({id: dbGroup.course}).id;
+    console.log(courseId)
     const courseworks = await classroom.courses.courseWork.list({courseId: courseId})
     console.log(courseworks)
   });
