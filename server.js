@@ -7,7 +7,7 @@ const SCOPES = [
   "https://www.googleapis.com/auth/classroom.coursework.me.readonly",
   "https://www.googleapis.com/auth/classroom.courses.readonly",
   "https://www.googleapis.com/auth/classroom.courses",
-  "https://www.googleapis.com/auth/classroom.rosters.readonly"
+  "https://www.googleapis.com/auth/classroom.rosters.readonly",
 ];
 
 const wa = require("@open-wa/wa-automate");
@@ -15,7 +15,7 @@ const admin = require("firebase-admin");
 const serviceAccount = require("./firebase-service.json");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
 });
 
 const db = admin.firestore();
@@ -23,18 +23,21 @@ wa.create({
   autoRefresh: true,
   cacheEnabled: false,
   sessionId: "jp",
-  authTimeout: 70000
-}).then(client => start(client));
+  authTimeout: 70000,
+}).then((client) => start(client));
 
 async function start(client) {
-  client.onMessage(async message => {
+  client.onMessage(async (message) => {
     if (
       !["557398417683@c.us", "557398653542@c.us", "557399622613@c.us"].includes(
         message.sender.id
       )
     )
       return;
-    if (message.isGroupMsg && await message.content.toLowerCase() == "configurar") {
+    if (
+      message.isGroupMsg &&
+      (await message.content.toLowerCase()) == "configurar"
+    ) {
       await client.sendText(message.from, "Iniciando configuração...");
       getCredentials(message, client);
     } else if (!message.isGroupMsg) {
@@ -45,28 +48,28 @@ async function start(client) {
     }
   });
   client
-    .onAddedToGroup(async chat => {
+    .onAddedToGroup(async (chat) => {
       await client.sendText(
         chat.id,
         'Obrigado por me adicionar no grupo! Envie "configurar" para iniciar a configuração.'
       );
     })
-    .catch(error => {
+    .catch((error) => {
       console.log(error);
     });
   await getGroups(client);
   setInterval(() => getGroups(client), 10000);
 }
 async function getGroups(client) {
-  const groups = await client.getAllGroups().catch(error => {
+  const groups = await client.getAllGroups().catch((error) => {
     console.log(error);
   });
 
   let dbGroups = await db.collection(`groups`).get();
   dbGroups = dbGroups.docs;
-  groups.forEach(async group => {
+  groups.forEach(async (group) => {
     const dbGroup = await dbGroups.find(
-      element => element.data().group == group.id
+      (element) => element.data().group == group.id
     );
     if (dbGroup == undefined) return;
     else {
@@ -125,16 +128,16 @@ async function getCourses(client, dbGroup) {
     oAuth2Client.setCredentials(token);
     const classroom = await google.classroom({
       version: "v1",
-      auth: oAuth2Client
+      auth: oAuth2Client,
     });
     const courses = classroom.courses;
     const topics = courses.topics;
-    const teachers = courses.teachers
+    const teachers = courses.teachers;
     const course = await courses.get({ id: dbGroup.course });
     const courseId = await course.data.id;
     let courseworks = await courses.courseWork.list({ courseId: courseId });
     // courseworks = await courseworks.data.courseWork;
-    courseworks.data.courseWork.forEach(async coursework => {
+    courseworks.data.courseWork.forEach(async (coursework) => {
       const courseworkId = coursework.id;
       const courseworksDb = await dbGroup.courseworks;
 
@@ -143,25 +146,32 @@ async function getCourses(client, dbGroup) {
           .doc(`groups/${dbGroup.group}`)
           .set({ courseworks: [] }, { merge: true });
         await db.doc(`groups/${dbGroup.group}`).update({
-          courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
+          courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id),
         });
       } else if (
         dbGroup.configured == true &&
         !(await dbGroup.courseworks.find(
-          courseworkDb => coursework.id == courseworkDb
+          (courseworkDb) => coursework.id == courseworkDb
         ))
       ) {
         db.doc(`groups/${dbGroup.group}`).update({
-          courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
+          courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id),
         });
-        const teacher = await teachers.get({courseId: coursework.courseId, userId: coursework.creatorUserId})
+        const teacher = await teachers.get({
+          courseId: coursework.courseId,
+          userId: coursework.creatorUserId,
+        });
+        const topic = await topics.get({
+          courseId: coursework.courseId,
+          id: coursework.topicId,
+        })
         await client.sendText(
           dbGroup.group,
           `📝 *Nova atividade!* 📝 
 *Título:* ${coursework.title}
 *Descrição:* ${coursework.description}
 *Professor:* ${teacher.data.profile.name.fullName}
-*Componente Curricular:* ${await (await topics.get({courseId: coursework.courseId, id: coursework.topicId})).data.name}
+*Componente Curricular:* ${topic.data.name}
 *Prazo:* ${coursework.dueDate.day}/${
             coursework.dueDate.month < 10
               ? `0${coursework.dueDate.month}`
@@ -191,7 +201,7 @@ async function getCourses(client, dbGroup) {
 async function getNewToken(oAuth2Client, callback, message, client) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: "offline",
-    scope: SCOPES
+    scope: SCOPES,
   });
 
   await client.sendText(
@@ -199,13 +209,13 @@ async function getNewToken(oAuth2Client, callback, message, client) {
     `Autorize o bot a acessar sua turma por esse link: ${authUrl}`
   );
   await client.sendText(message.from, "Depois de autenticar, envie o código.");
-  const filter = m => m.body.length > 1;
+  const filter = (m) => m.body.length > 1;
   let codeSent = "";
 
   const collector = client
     .createMessageCollector(message, () => true, { max: 1 })
 
-    .on("collect", async message => {
+    .on("collect", async (message) => {
       const code = message.body;
 
       console.log(code);
@@ -222,28 +232,28 @@ async function chooseCourse(auth, message, client, token) {
   const classroom = google.classroom({ version: "v1", auth });
   classroom.courses.list(
     {
-      pageSize: 10
+      pageSize: 10,
     },
     (err, res) => {
       if (err) return console.error("The API returned an error: " + err);
       const courses = res.data.courses;
       if (courses && courses.length) {
         client.sendText(message.from, "Escolha um curso:");
-        courses.forEach(course => {
+        courses.forEach((course) => {
           client.sendText(message.from, `${course.name}`);
         });
         const collector = client
           .createMessageCollector(message, () => true, { max: 1 })
-          .on("collect", async message => {
+          .on("collect", async (message) => {
             const course = courses.find(
-              element => element.name == message.body
+              (element) => element.name == message.body
             );
             client.sendText(message.from, `Curso escolhido: ${course.name}`);
             const group = await db.doc(`groups/${message.from}`);
             await group.set({
               course: course.id,
               group: message.from,
-              token: token
+              token: token,
             });
             await client.sendText(
               message.from,
