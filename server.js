@@ -127,18 +127,20 @@ async function getCourses(client, dbGroup) {
     let token = await dbGroup.token;
     oAuth2Client.setCredentials(token);
     const classroom = await google.classroom({ version: "v1", auth: oAuth2Client });
-    const course = await classroom.courses.get({id: dbGroup.course});
+    const courses = classroom.courses
+    const course = await courses.get({id: dbGroup.course});
     const courseId = await course.data.id
-    const courseworks = await classroom.courses.courseWork.list({courseId: courseId}).data.courseWork
-    courseworks.forEach(async coursework => {
-      if(dbGroup.courseworks.find(coursework.id)) {return}
-      else{
-        const group = await db.doc(`groups/${dbGroup.group}`).update({
-          courseworks: db.FieldValue.arrayUnion(coursework.id)
-        })
-        client.sendText(dbGroup.group, 'Nova atividade!')
-      }
-    })
+    const courseworks = await courses.courseWork.list({courseId: courseId})
+    console.log(courseworks)
+    // courseworks.forEach(async coursework => {
+    //   if(dbGroup.courseworks.find(coursework.id)) {return}
+    //   else{
+    //     const group = await db.doc(`groups/${dbGroup.group}`).update({
+    //       courseworks: db.FieldValue.arrayUnion(coursework.id)
+    //     })
+    //     client.sendText(dbGroup.group, 'Nova atividade!')
+    //   }
+    // })
     // console.log(courseworks.data.courseWork)
   });
 }
