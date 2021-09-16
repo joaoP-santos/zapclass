@@ -133,9 +133,10 @@ async function getCourses(client, dbGroup) {
     courseworks.forEach(async coursework => {
       if(dbGroup.courseworks.find(coursework.id)) {return}
       else{
-        await db.doc(`groups/${message.from}`).set({
-          coursework
+        const group = await db.doc(`groups/${dbGroup.group}`).update({
+          courseworks: db.FieldValue.arrayUnion(coursework.id)
         })
+        client.sendText(dbGroup.group, 'Nova atividade!')
       }
     })
     // console.log(courseworks.data.courseWork)
