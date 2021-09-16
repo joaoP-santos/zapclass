@@ -141,7 +141,7 @@ async function getCourses(client, dbGroup) {
       const courseworksDb = await dbGroup.courseworks;
 
       if (!dbGroup.configured) {
-        await db.doc(`groups/${dbGroup.group}`).set({ courseworks: [] });
+        await db.doc(`groups/${dbGroup.group}`).set({ courseworks: [] }, {merge: true});
         await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
@@ -155,7 +155,7 @@ async function getCourses(client, dbGroup) {
 `Nova atividade!
 Título: ${coursework.title}
 Descrição: ${coursework.description}
-Prazo: ${coursework.dueDate.day}/${coursework.dueDate.month}${coursework.dueTime ? }, às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.
+Prazo: ${coursework.dueDate.day}/${coursework.dueDate.month}${coursework.dueTime ? ` às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.` : '' } 
 Link: ${coursework.alternateLink}`
         );
       }
