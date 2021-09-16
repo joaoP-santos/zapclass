@@ -111,6 +111,7 @@ async function authorize(credentials, callback, message, client, group) {
   }
 }
 async function getCourses(client, dbGroup) {
+  console.log('getting courses')
   fs.readFile("credentials.json", async (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
@@ -142,7 +143,7 @@ async function getCourses(client, dbGroup) {
       if (dbGroup.configured == false) {
         await db
           .doc(`groups/${dbGroup.group}`)
-          .set({ configured: true, courseworks: [] });
+          .set({ courseworks: [] });
         await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
@@ -151,6 +152,7 @@ async function getCourses(client, dbGroup) {
         db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
+        console.log('aaa diferenciado xd')
         await client.sendText(
           dbGroup.group,
           `Nova atividade!
@@ -161,6 +163,10 @@ Link: ${coursework.alternateLink}`
         );
         console.log('Mensagem enviada')
       }
+    }).then(async () => {
+      await db
+          .doc(`groups/${dbGroup.group}`)
+          .set({ configure: true });
     });
     // console.log(courseworks.data.courseWork)
   });
