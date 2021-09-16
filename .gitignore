@@ -1,6 +1,14 @@
 .glitchdotcom.json
 .node-gyp
 node_modules
+logs
+credentials.json
+jp.data.json
+firebase-service.json
+.data
+.config
+.cache
+.pki
 
 # managed by open-wa
 **.data.json
