@@ -69,7 +69,7 @@ async function getGroups(client) {
     const dbGroup = await dbGroups.find(
       element => element.data().group == group.id
     );
-    if (dbGroup == undefined) console.log(dbGroup);
+    if (dbGroup == undefined) return;
     else {
       const dbGroupData = dbGroup.data();
       await getCourses(client, dbGroupData);
@@ -112,7 +112,6 @@ async function authorize(credentials, callback, message, client, group) {
   }
 }
 async function getCourses(client, dbGroup) {
-  console.log("getting courses");
   fs.readFile("credentials.json", async (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
@@ -132,7 +131,7 @@ async function getCourses(client, dbGroup) {
       auth: oAuth2Client
     });
     const courses = classroom.courses;
-    const topics = classroom.topics;
+    const topics = courses.topics;
     const course = await courses.get({ id: dbGroup.course });
     const courseId = await course.data.id;
     let courseworks = await courses.courseWork.list({ courseId: courseId });
@@ -160,12 +159,20 @@ async function getCourses(client, dbGroup) {
         await client.sendText(
           dbGroup.group,
           `📝 Nova atividade! 📝 
-**Título:** ${coursework.title}
-**Descrição:** ${coursework.description}
-**Componente Curricular:** ${await topics.get(coursework.topicId).name}
-**Prazo:** ${coursework.dueDate.day}/${coursework.dueDate.month}${
+*Título:* ${coursework.title}
+*Descrição:* ${coursework.description}
+*Componente Curricular:* ${await topics.get(coursework.topicId).name}
+*Prazo:* ${coursework.dueDate.day}/${
+            coursework.dueDate.month < 10
+              ? `0${coursework.dueDate.month}`
+              : coursework.dueDate.month
+          }${
             coursework.dueTime.hours
-              ? ` às ${coursework.dueTime.hours - 3}h${
+              ? ` às ${
+                  coursework.dueTime.hours - 3 == -1
+                    ? 23
+                    : coursework.dueTime.hours
+                }h${
                   coursework.dueTime.minutes == undefined
                     ? "00"
                     : coursework.dueTime.minutes
