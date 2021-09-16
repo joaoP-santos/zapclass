@@ -138,15 +138,15 @@ async function getCourses(client, dbGroup) {
       const courseworkId = coursework.id;
       const courseworksDb = await dbGroup.courseworks;
 
-      if (courseworksDb != undefined) {
-        return;
-      } else if (!dbGroup.configured) {
+
+      if (dbGroup.configured == false) {
         await db
           .doc(`groups/${dbGroup.group}`)
           .set({ configured: true, courseworks: [] });
         await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
+        console.log('aaa')
       } else {
         db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
@@ -220,7 +220,8 @@ async function chooseCourse(auth, message, client, token) {
             await group.set({
               course: course.id,
               group: message.from,
-              token: token
+              token: token,
+              configure: false
             });
             await client.sendText(
               message.from,
