@@ -155,13 +155,15 @@ async function getCourses(client, dbGroup) {
         db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
+        console.log(await teachers.get({courseId: coursework.id, userId: coursework.creatorUserId}))
+        // *Professor:* ${}
         await client.sendText(
           dbGroup.group,
           `📝 *Nova atividade!* 📝 
 *Título:* ${coursework.title}
 *Descrição:* ${coursework.description}
-*Professor:* ${await teachers.get({courseId: coursework.id, userid: coursework.creatorUserId}).data.name}
-*Componente Curricular:* ${await topics.get({courseId: coursework.id, id: coursework.topicId}).data.name}
+
+*Componente Curricular:* ${await topics.get({courseId: coursework.id, id: coursework.topicId})}
 *Prazo:* ${coursework.dueDate.day}/${
             coursework.dueDate.month < 10
               ? `0${coursework.dueDate.month}`
