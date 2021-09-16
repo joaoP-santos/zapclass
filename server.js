@@ -8,7 +8,7 @@ const SCOPES = [
   "https://www.googleapis.com/auth/classroom.coursework.me.readonly",
   "https://www.googleapis.com/auth/classroom.courses.readonly",
   "https://www.googleapis.com/auth/classroom.courses",
-  "https://www.googleapis.com/auth/classroom.profile.emails"
+  "https://www.googleapis.com/auth/classroom.rosters.readonly"
 ];
 
 const wa = require("@open-wa/wa-automate");
@@ -87,7 +87,6 @@ async function getCredentials(message, client, group) {
       client,
       group
     );
-    console.log(authorizeCredentials);
     return authorizeCredentials;
   });
 }
@@ -101,7 +100,6 @@ async function authorize(credentials, callback, message, client, group) {
   // Check if we have previously stored a token.
   let token = await db.doc(`groups/${group}`).get();
   if (!token.exists) {
-    console.log(oAuth2Client);
     return await getNewToken(oAuth2Client, callback, message, client);
   } else {
     token = await token.data().token;
@@ -132,6 +130,7 @@ async function getCourses(client, dbGroup) {
     });
     const courses = classroom.courses;
     const topics = courses.topics;
+    const teachers = courses.teachers
     const course = await courses.get({ id: dbGroup.course });
     const courseId = await course.data.id;
     let courseworks = await courses.courseWork.list({ courseId: courseId });
@@ -158,10 +157,11 @@ async function getCourses(client, dbGroup) {
         });
         await client.sendText(
           dbGroup.group,
-          `📝 Nova atividade! 📝 
+          `📝 *Nova atividade!* 📝 
 *Título:* ${coursework.title}
 *Descrição:* ${coursework.description}
-*Componente Curricular:* ${await topics.get(coursework.topicId).name}
+*Professor:* ${await teachers.get({courseId: coursework.id, userid: coursework.creatorUserId}).data.name}
+*Componente Curricular:* ${await topics.get({courseId: coursework.id, id: coursework.topicId}).data.name}
 *Prazo:* ${coursework.dueDate.day}/${
             coursework.dueDate.month < 10
               ? `0${coursework.dueDate.month}`
