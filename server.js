@@ -137,16 +137,14 @@ async function getCourses(client, dbGroup) {
     let courseworks = await courses.courseWork.list({ courseId: courseId });
     // courseworks = await courseworks.data.courseWork;
     console.log(courseworks)
-    courseworks.forEach(async coursework => {
+    courseworks.data.courseWork.forEach(async coursework => {
       const courseworkId = coursework.id;
-      const courseworkDb = await dbGroup.courseworks.find(
-        coursework => coursework == courseworkId
-      );
+      const courseworksDb = await dbGroup.courseworks
 
-      if (courseworkDb != undefined) {
+      if (courseworksDb != undefined) {
         return;
       } else if (dbGroup.configured) {
-        await db.doc(`groups/${dbGroup.group}`).set({ configured: true });
+        await db.doc(`groups/${dbGroup.group}`).set({ configured: true, courseworks: []});
         await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
