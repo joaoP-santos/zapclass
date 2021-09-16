@@ -1,6 +1,5 @@
 const fs = require("fs");
-const readline = require("readline");
-const { google, CloudPubsubTopic, Feed, Registration } = require("googleapis");
+const { google } = require("googleapis");
 
 const SCOPES = [
   "https://www.googleapis.com/auth/classroom.coursework.students.readonly",
@@ -35,7 +34,7 @@ async function start(client) {
       )
     )
       return;
-    if (message.isGroupMsg && message.content.toLowerCase() == "configurar") {
+    if (message.isGroupMsg && await message.content.toLowerCase() == "configurar") {
       await client.sendText(message.from, "Iniciando configuração...");
       getCredentials(message, client);
     } else if (!message.isGroupMsg) {
@@ -155,15 +154,14 @@ async function getCourses(client, dbGroup) {
         db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
-        console.log(await teachers.get({courseId: coursework.id, userId: coursework.creatorUserId}))
-        // *Professor:* ${}
+        const teacher = await teachers.get({courseId: coursework.courseId, userId: coursework.creatorUserId})
         await client.sendText(
           dbGroup.group,
           `📝 *Nova atividade!* 📝 
 *Título:* ${coursework.title}
 *Descrição:* ${coursework.description}
-
-*Componente Curricular:* ${await topics.get({courseId: coursework.id, id: coursework.topicId})}
+*Professor:* ${teacher.data.profile.name.fullName}
+*Componente Curricular:* ${await (await topics.get({courseId: coursework.courseId, id: coursework.topicId})).data.name}
 *Prazo:* ${coursework.dueDate.day}/${
             coursework.dueDate.month < 10
               ? `0${coursework.dueDate.month}`
@@ -181,7 +179,7 @@ async function getCourses(client, dbGroup) {
                 }min.`
               : ""
           } 
-**Link:** ${coursework.alternateLink}`
+*Link:* ${coursework.alternateLink}`
         );
       }
     });

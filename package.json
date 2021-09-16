@@ -1,7 +1,7 @@
 {
-  "name": "hello-node",
-  "version": "0.0.1",
-  "description": "A simple Node app built on fastify, instantly up and running.",
+  "name": "zapclass",
+  "version": "0.1.0",
+  "description": "A WhatsApp BOT with an integration to Classroom API",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,19 +11,19 @@
     "@google-cloud/pubsub": "^2.17.0",
     "@open-wa/wa-automate": "^4.21.0",
     "firebase-admin": "^9.11.1",
-    "googleapis": "^84.0.0",
-    "push-receiver": "^2.1.1"
+    "googleapis": "^84.0.0"
   },
   "engines": {
     "node": "12.x"
   },
   "repository": {
-    "url": "https://glitch.com/edit/#!/glitch-hello-node"
+    "url": "https://github.com/joaoP-santos/zapclass"
   },
   "license": "MIT",
   "keywords": [
     "node",
-    "glitch",
-    "express"
+    "classroomapi",
+    "firebase",
+    "@open-wa/wa-automate"
   ]
 }
