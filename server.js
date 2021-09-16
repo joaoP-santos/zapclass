@@ -134,14 +134,13 @@ async function getCourses(client, dbGroup) {
     const courseId = await course.data.id;
     let courseworks = await courses.courseWork.list({ courseId: courseId });
     // courseworks = await courseworks.data.courseWork;
-    console.log(courseworks);
     courseworks.data.courseWork.forEach(async coursework => {
       const courseworkId = coursework.id;
       const courseworksDb = await dbGroup.courseworks;
 
       if (courseworksDb != undefined) {
         return;
-      } else if (dbGroup.configured) {
+      } else if (!dbGroup.configured) {
         await db
           .doc(`groups/${dbGroup.group}`)
           .set({ configured: true, courseworks: [] });
@@ -156,8 +155,8 @@ async function getCourses(client, dbGroup) {
           dbGroup.group,
           `Nova atividade!
 Título: ${coursework.title}
-Professor: ${coursework.description}
-Prazo: ${coursework.dueDate.day}/{${coursework.dueDate.month}, às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.
+Descrição: ${coursework.description}
+Prazo: ${coursework.dueDate.day}/${coursework.dueDate.month}, às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.
 Link: ${coursework.alternateLink}`
         );
       }
