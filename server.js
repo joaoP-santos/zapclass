@@ -8,7 +8,8 @@ const SCOPES = [
   "https://www.googleapis.com/auth/classroom.coursework.me.readonly",
   "https://www.googleapis.com/auth/classroom.courses.readonly",
   "https://www.googleapis.com/auth/classroom.push-notifications",
-  "https://www.googleapis.com/auth/classroom.courses"
+  "https://www.googleapis.com/auth/classroom.courses",
+  "https://www.googleapis.com/auth/classroom.profile.emails"
 ];
 
 const TOKEN_PATH = "token.json";
