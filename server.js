@@ -63,8 +63,8 @@ async function getGroups(client) {
     console.log(error);
   });
 
-  let dbGroups = (await db.collection(`groups`).get())
-  dbGroups = dbGroups.docs
+  let dbGroups = await db.collection(`groups`).get();
+  dbGroups = dbGroups.docs;
   groups.forEach(async group => {
     const dbGroup = await dbGroups.find(
       element => element.data().group == group.id
@@ -112,7 +112,7 @@ async function authorize(credentials, callback, message, client, group) {
   }
 }
 async function getCourses(client, dbGroup) {
-  console.log('getting courses')
+  console.log("getting courses");
   fs.readFile("credentials.json", async (err, content) => {
     if (err) return console.log("Error loading client secret file:", err);
     // Authorize a client with credentials, then call the Google Classroom API.
@@ -140,36 +140,29 @@ async function getCourses(client, dbGroup) {
       const courseworkId = coursework.id;
       const courseworksDb = await dbGroup.courseworks;
 
-
-      if (dbGroup.configured == false) {
-        await db
-          .doc(`groups/${dbGroup.group}`)
-          .set({ courseworks: [] });
+      if (!dbGroup.configured) {
+        await db.doc(`groups/${dbGroup.group}`).set({ courseworks: [] });
         await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
-        console.log('aaa')
-      } else {
+        console.log("aaa");
+      } else if (dbGroup.configured == true) {
         db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
-        console.log('aaa diferenciado xd')
         await client.sendText(
           dbGroup.group,
-          `Nova atividade!
+`Nova atividade!
 Título: ${coursework.title}
 Descrição: ${coursework.description}
-Prazo: ${coursework.dueDate.day}/${coursework.dueDate.month}, às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.
+Prazo: ${coursework.dueDate.day}/${coursework.dueDate.month}${coursework.dueTime ? }, às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.
 Link: ${coursework.alternateLink}`
         );
-        console.log('Mensagem enviada')
       }
-    }).then(async () => {
-      await db
-          .doc(`groups/${dbGroup.group}`)
-          .set({data: { configure: true }, options: tue}});
     });
-    e.log(coursewor.data.courseWork)
+    await db
+      .doc(`groups/${dbGroup.group}`)
+      .set({ configured: true }, { merge: true });
   });
 }
 async function getNewToken(oAuth2Client, callback, message, client) {
@@ -227,8 +220,7 @@ async function chooseCourse(auth, message, client, token) {
             await group.set({
               course: course.id,
               group: message.from,
-              token: token,
-              configure: false
+              token: token
             });
             await client.sendText(
               message.from,
