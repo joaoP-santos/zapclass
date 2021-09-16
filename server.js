@@ -64,8 +64,7 @@ async function getGroups(client) {
   });
 
   let dbGroups = (await db.collection(`groups`).get())
-  dbGroups = dbGroups.docs()
-  console.log(dbGroups)
+  dbGroups = dbGroups.docs
   groups.forEach(async group => {
     const dbGroup = await dbGroups.find(
       element => element.data().group == group.id
@@ -168,7 +167,7 @@ Link: ${coursework.alternateLink}`
     }).then(async () => {
       await db
           .doc(`groups/${dbGroup.group}`)
-          .set({ configure: true });
+          .set({data: { configure: true }, options: {merge: true}});
     });
     // console.log(courseworks.data.courseWork)
   });
