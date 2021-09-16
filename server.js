@@ -4,7 +4,7 @@ const { google, CloudPubsubTopic, Feed, Registration } = require("googleapis");
 
 const SCOPES = [
   "https://www.googleapis.com/auth/classroom.coursework.students.readonly",
-  "https://www.googleapis.com/auth/classroom.announcements.readonly",
+  "https://www.googleapis.com/auth/classroom.topics.readonly",
   "https://www.googleapis.com/auth/classroom.coursework.me.readonly",
   "https://www.googleapis.com/auth/classroom.courses.readonly",
   "https://www.googleapis.com/auth/classroom.courses",
@@ -132,6 +132,7 @@ async function getCourses(client, dbGroup) {
       auth: oAuth2Client
     });
     const courses = classroom.courses;
+    const topics = classroom.topics;
     const course = await courses.get({ id: dbGroup.course });
     const courseId = await course.data.id;
     let courseworks = await courses.courseWork.list({ courseId: courseId });
@@ -141,21 +142,37 @@ async function getCourses(client, dbGroup) {
       const courseworksDb = await dbGroup.courseworks;
 
       if (!dbGroup.configured) {
-        await db.doc(`groups/${dbGroup.group}`).set({ courseworks: [] }, {merge: true});
+        await db
+          .doc(`groups/${dbGroup.group}`)
+          .set({ courseworks: [] }, { merge: true });
         await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
-      } else if (dbGroup.configured == true && !(await dbGroup.courseworks.find(courseworkDb => coursework.id == courseworkDb))) {
+      } else if (
+        dbGroup.configured == true &&
+        !(await dbGroup.courseworks.find(
+          courseworkDb => coursework.id == courseworkDb
+        ))
+      ) {
         db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
         await client.sendText(
           dbGroup.group,
-`Nova atividade!
-Título: ${coursework.title}
-Descrição: ${coursework.description}
-Prazo: ${coursework.dueDate.day}/${coursework.dueDate.month}${coursework.dueTime ? ` às ${coursework.dueTime.hours - 3}h${coursework.dueTime.minutes}min.` : '' } 
-Link: ${coursework.alternateLink}`
+          `📝 Nova atividade! 📝 
+**Título:** ${coursework.title}
+**Descrição:** ${coursework.description}
+**Componente Curricular:** ${await topics.get(coursework.topicId).name}
+**Prazo:** ${coursework.dueDate.day}/${coursework.dueDate.month}${
+            coursework.dueTime.hours
+              ? ` às ${coursework.dueTime.hours - 3}h${
+                  coursework.dueTime.minutes == undefined
+                    ? "00"
+                    : coursework.dueTime.minutes
+                }min.`
+              : ""
+          } 
+**Link:** ${coursework.alternateLink}`
         );
       }
     });
