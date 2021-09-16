@@ -167,9 +167,9 @@ Link: ${coursework.alternateLink}`
     }).then(async () => {
       await db
           .doc(`groups/${dbGroup.group}`)
-          .set({data: { configure: true }, options: {merge: true}});
+          .set({data: { configure: true }, options: tue}});
     });
-    // console.log(courseworks.data.courseWork)
+    e.log(coursewor.data.courseWork)
   });
 }
 async function getNewToken(oAuth2Client, callback, message, client) {
