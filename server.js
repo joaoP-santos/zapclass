@@ -8,15 +8,8 @@ const SCOPES = [
   "https://www.googleapis.com/auth/classroom.coursework.me.readonly",
   "https://www.googleapis.com/auth/classroom.courses.readonly",
   "https://www.googleapis.com/auth/classroom.courses",
-  
-    "https://www.googleapis.com/auth/classroom.rosters",
-    "https://www.googleapis.com/auth/classroom.rosters.readonly",
-    "https://www.googleapis.com/auth/classroom.profile.emails",
-    "https://www.googleapis.com/auth/classroom.profile.photos",
-
+  "https://www.googleapis.com/auth/classroom.profile.le.token.json"
 ];
-
-const TOKEN_PATH = "token.json";
 
 const wa = require("@open-wa/wa-automate");
 const admin = require("firebase-admin");
@@ -141,32 +134,29 @@ async function getCourses(client, dbGroup) {
     const courseId = await course.data.id;
     let courseworks = await courses.courseWork.list({ courseId: courseId });
     // courseworks = await courseworks.data.courseWork;
-    console.log(courseworks)
+    console.log(courseworks);
     courseworks.data.courseWork.forEach(async coursework => {
       const courseworkId = coursework.id;
-      const courseworksDb = await dbGroup.courseworks
+      const courseworksDb = await dbGroup.courseworks;
 
       if (courseworksDb != undefined) {
         return;
       } else if (dbGroup.configured) {
-        await db.doc(`groups/${dbGroup.group}`).set({ configured: true, courseworks: []});
+        await db
+          .doc(`groups/${dbGroup.group}`)
+          .set({ configured: true, courseworks: [] });
         await db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
       } else {
-        const teacher = await courses.teachers.get({
-          courseId: courseworkId,
-          userId: coursework.creatorUserId
-        });
-        await db.doc(`groups/${dbGroup.group}`).update({
+        db.doc(`groups/${dbGroup.group}`).update({
           courseworks: admin.firestore.FieldValue.arrayUnion(coursework.id)
         });
         client.sendText(
           dbGroup.group,
           `Nova atividade!
 Título: ${coursework.title}
-Professor: ${teacher.profile.name.fullName}
-Descrição: ${coursework.description}
+Professor: ${coursework.description}
 Prazo: ${coursework.dueDate.day}/{${coursework.dueDate.month}, às ${coursework.dueTime.hours}h${coursework.dueTime.minutes}min.
 Link: ${coursework.alternateLink}`
         );
